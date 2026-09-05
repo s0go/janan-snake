@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>장안고 공학의 정석 - 스네이크 게임</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .grid-board { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); }
+        .cell { aspect-ratio: 1 / 1; border: 0.5px solid rgba(255, 255, 255, 0.05); }
+        .snake-head { background-color: #3b82f6; border-radius: 4px; }
+        .snake-body { background-color: #60a5fa; border-radius: 2px; }
+        .apple { background-color: #ef4444; border-radius: 50%; transform: scale(0.8); }
+        .golden-apple { background-color: #eab308; border-radius: 50%; transform: scale(0.9); box-shadow: 0 0 10px #eab308; }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8 flex flex-col justify-between">
+
+    <div class="mx-auto flex max-w-7xl w-full flex-col gap-6">
+        <!-- 헤더 -->
+        <header class="flex flex-col items-center justify-between gap-4 border-b border-slate-700 pb-5 md:flex-row">
+            <div class="flex items-center gap-4">
+                <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-or6Xtzl6ePYdO5DCtzAhVwgySktBte.png" alt="장안고등학교 로고" class="h-16 w-16 object-contain" />
+                <div>
+                    <p class="font-mono text-xs font-bold uppercase tracking-[0.28em] text-blue-400">JANGAN HIGH SCHOOL</p>
+                    <h1 class="text-2xl font-black tracking-tight sm:text-3xl">장안고 공학의 정석</h1>
+                </div>
+            </div>
+            <div class="flex gap-2 text-center font-mono text-xs">
+                <div class="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2">
+                    <span class="block text-slate-400">점수</span>
+                    <strong id="score-display" class="text-xl">0</strong>
+                </div>
+            </div>
+        </header>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="grid gap-6 lg:grid-cols-[1fr_280px]">
+            <!-- 게임 판 -->
+            <section class="relative rounded-2xl border border-slate-700 bg-slate-800/50 p-3 shadow-sm sm:p-5">
+                <div id="board" class="mx-auto grid-board aspect-square w-full max-w-[650px] overflow-hidden rounded-xl border-4 border-blue-500/80 bg-slate-900">
+                    <!-- 셀들이 자바스크립트로 생성됨 -->
+                </div>
+
+                <!-- 오버레이 메인/게임오버 화면 -->
+                <div id="overlay" class="absolute inset-0 flex items-center justify-center rounded-2xl bg-slate-950/85 p-6 text-center backdrop-blur-[2px]">
+                    <div class="w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900 px-6 py-8 shadow-xl sm:px-12">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-or6Xtzl6ePYdO5DCtzAhVwgySktBte.png" alt="장안고등학교 로고" class="mx-auto h-36 w-36 object-contain sm:h-48 sm:w-48" />
+                        <p class="mt-4 font-mono text-xs font-bold uppercase tracking-[0.3em] text-slate-400">JANGAN ENGINEERING CLUB FESTIVAL</p>
+                        <h2 id="overlay-title" class="mt-3 text-3xl font-black sm:text-5xl">장안고 공학의 정석</h2>
+                        
+                        <div id="overlay-desc" class="mt-3">
+                            <p class="text-base font-semibold text-slate-200">26 장안고 동아리 축제용 게임</p>
+                            <p class="mt-2 text-sm text-slate-400">사과 알아서 먹고 경쟁하거라 - 공학의 정석 1학년 일동-</p>
+                        </div>
+
+                        <!-- 점수 등록 폼 -->
+                        <div id="score-form" class="hidden mx-auto mt-5 flex max-w-sm gap-2">
+                            <input id="player-name" maxlength="12" placeholder="플레이어 이름" class="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+                            <button onclick="submitScore()" id="submit-btn" class="rounded-lg bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-500">기록</button>
+                        </div>
+
+                        <button id="start-btn" onclick="restart()" class="mt-6 rounded-lg bg-blue-600 px-7 py-3 font-bold text-white transition hover:bg-blue-500">스페이스로 시작</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 사이드바 -->
+            <aside class="flex flex-col gap-4">
+                <div class="rounded-2xl border border-slate-700 bg-slate-800/50 p-5">
+                    <h2 class="font-mono text-sm font-bold uppercase tracking-widest text-slate-300">HOW TO PLAY</h2>
+                    <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+                        <span class="rounded bg-slate-900 p-2 text-center font-mono border border-slate-700">WASD</span>
+                        <span class="rounded bg-slate-900 p-2 text-center font-mono border border-slate-700">SPACE</span>
+                    </div>
+                    <p class="mt-3 text-sm leading-6 text-slate-400">WASD로 뱀을 조작하세요. 사과 하나당 0.5점, 황금 사과는 10~50점을 줍니다.</p>
+                    <button id="toggle-btn" onclick="toggleGame()" class="mt-4 w-full rounded-lg border border-blue-500 px-4 py-2 font-bold text-blue-400 transition hover:bg-blue-500 hover:text-white">게임 시작</button>
+                </div>
+
+                <div class="rounded-2xl border border-slate-700 bg-slate-800/50 p-5">
+                    <h2 class="font-mono text-sm font-bold uppercase tracking-widest text-slate-300">RANKING BOARD</h2>
+                    <ol id="ranking-list" class="mt-4 space-y-2 text-sm">
+                        <!-- 랭킹 리스트 생성 -->
+                    </ol>
+                </div>
+            </aside>
+        </div>
+
+        <footer class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-700 pt-4 font-mono text-xs text-slate-400">
+            <span>JANGAN HIGH SCHOOL · SNAKE GAME</span>
+            <span>SPACE 시작 / 일시정지</span>
+        </footer>
+    </div>
+
+    <script>
+        const SIZE = 20;
+        const START_SNAKE = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+        const START_APPLES = [{ x: 4, y: 4 }, { x: 15, y: 5 }, { x: 5, y: 15 }, { x: 15, y: 15 }, { x: 3, y: 11 }];
+
+        let snake = [...START_SNAKE];
+        let apples = [...START_APPLES];
+        let direction = 'right';
+        let nextDirection = 'right';
+        let running = false;
+        let gameOver = false;
+        let score = 0;
+        let scoreSubmitted = false;
+        let gameTimer = null;
+        let ranking = [];
+
+        try {
+            ranking = JSON.parse(localStorage.getItem('jangang-snake-ranking') || '[]');
+        } catch { ranking = []; }
+
+        function same(a, b) { return a.x === b.x && a.y === b.y; }
+
+        function randomApple() {
+            const open = [];
+            for (let y = 0; y < SIZE; y++) {
+                for (let x = 0; x < SIZE; x++) {
+                    const point = { x, y };
+                    if (!snake.some(p => same(p, point)) && !apples.some(a => same(a, point))) {
+                        open.push(point);
+                    }
+                }
+            }
+            const point = open[Math.floor(Math.random() * open.length)] || { x: 2, y: 2 };
+            return { ...point, golden: Math.random() < 0.01 };
+        }
+
+        function createBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            for (let y = 0; y < SIZE; y++) {
+                for (let x = 0; x < SIZE; x++) {
+                    const cell = document.createElement('div');
+                    cell.id = `cell-${x}-${y}`;
+                    cell.className = 'cell';
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function render() {
+            document.getElementById('score-display').innerText = score;
+
+            for (let y = 0; y < SIZE; y++) {
+                for (let x = 0; x < SIZE; x++) {
+                    const cell = document.getElementById(`cell-${x}-${y}`);
+                    cell.className = 'cell';
+                }
+            }
+
+            apples.forEach(apple => {
+                const cell = document.getElementById(`cell-${apple.x}-${apple.y}`);
+                if (cell) cell.className = `cell ${apple.golden ? 'golden-apple' : 'apple'}`;
+            });
+
+            if (!gameOver) {
+                snake.forEach((part, index) => {
+                    const cell = document.getElementById(`cell-${part.x}-${part.y}`);
+                    if (cell) cell.className = `cell ${index === 0 ? 'snake-head' : 'snake-body'}`;
+                });
+            }
+
+            // UI 상태 반영
+            const overlay = document.getElementById('overlay');
+            const toggleBtn = document.getElementById('toggle-btn');
+            
+            if (running) {
+                overlay.classList.add('hidden');
+                toggleBtn.innerText = '일시정지';
+            } else {
+                overlay.classList.remove('hidden');
+                toggleBtn.innerText = '게임 시작';
+            }
+
+            renderRanking();
+        }
+
+        function gameStep() {
+            direction = nextDirection;
+            const head = snake[0];
+            const next = { 
+                x: head.x + (direction === 'right' ? 1 : direction === 'left' ? -1 : 0), 
+                y: head.y + (direction === 'down' ? 1 : direction === 'up' ? -1 : 0) 
+            };
+
+            if (next.x < 0 || next.y < 0 || next.x >= SIZE || next.y >= SIZE || snake.some(p => same(p, next))) {
+                endGame();
+                return;
+            }
+
+            const eatenIndex = apples.findIndex(a => same(a, next));
+            const updated = [next, ...snake];
+
+            if (eatenIndex >= 0) {
+                const eaten = apples[eatenIndex];
+                if (eaten.golden) {
+                    score += Math.floor(Math.random() * 41) + 10;
+                } else {
+                    score += 0.5;
+                }
+                apples[eatenIndex] = randomApple();
+            } else {
+                updated.pop();
+            }
+
+            snake = updated;
+            render();
+        }
+
+        function restart() {
+            snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+            apples = [{ x: 4, y: 4 }, { x: 15, y: 5 }, { x: 5, y: 15 }, { x: 15, y: 15 }, { x: 3, y: 11 }];
+            direction = 'right';
+            nextDirection = 'right';
+            score = 0;
+            gameOver = false;
+            scoreSubmitted = false;
+            running = true;
+
+            document.getElementById('score-form').classList.add('hidden');
+            document.getElementById('overlay-desc').classList.remove('hidden');
+            document.getElementById('start-btn').innerText = '스페이스로 시작';
+
+            clearInterval(gameTimer);
+            gameTimer = setInterval(gameStep, 135);
+            render();
+        }
+
+        function toggleGame() {
+            if (!running || gameOver) {
+                restart();
+            } else {
+                running = false;
+                clearInterval(gameTimer);
+                render();
+            }
+        }
+
+        function endGame() {
+            gameOver = true;
+            running = false;
+            clearInterval(gameTimer);
+
+            document.getElementById('overlay-title').innerText = 'GAME OVER';
+            document.getElementById('overlay-desc').innerHTML = `<p class="text-slate-400">최종 점수 ${score}점 · 이름을 한 번만 등록할 수 있습니다.</p>`;
+            document.getElementById('score-form').classList.remove('hidden');
+            document.getElementById('start-btn').innerText = '다시 시작하기';
+            render();
+        }
+
+        function submitScore() {
+            const nameInput = document.getElementById('player-name');
+            const name = nameInput.value.trim();
+            if (scoreSubmitted || !name || score <= 0) return;
+
+            ranking.push({ name: name.slice(0, 12), score, date: new Date().toLocaleDateString('ko-KR') });
+            ranking.sort((a, b) => b.score - a.score);
+            ranking = ranking.slice(0, 5);
+
+            localStorage.setItem('jangang-snake-ranking', JSON.stringify(ranking));
+            nameInput.value = '';
+            scoreSubmitted = true;
+            document.getElementById('submit-btn').disabled = true;
+            renderRanking();
+        }
+
+        function renderRanking() {
+            const list = document.getElementById('ranking-list');
+            if (!ranking.length) {
+                list.innerHTML = `<p class="text-sm text-slate-500 text-center py-2">첫 번째 기록을 남겨보세요.</p>`;
+                return;
+            }
+            list.innerHTML = ranking.map((rank, index) => `
+                <li class="flex items-center justify-between border-b border-slate-700/50 pb-2">
+                    <span><b class="mr-2 text-slate-500">${index + 1}</b>${rank.name}</span>
+                    <strong class="text-blue-400">${rank.score}</strong>
+                </li>
+            `).join('');
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                toggleGame();
+                return;
+            }
+            const keys = { w: 'up', ArrowUp: 'up', s: 'down', ArrowDown: 'down', a: 'left', ArrowLeft: 'left', d: 'right', ArrowRight: 'right' };
+            const next = keys[e.key];
+            if (next) {
+                e.preventDefault();
+                if (
+                    (direction === 'up' && next !== 'down') ||
+                    (direction === 'down' && next !== 'up') ||
+                    (direction === 'left' && next !== 'right') ||
+                    (direction === 'right' && next !== 'left')
+                ) {
+                    nextDirection = next;
+                }
+            }
+        });
+
+        createBoard();
+        render();
+    </script>
+</body>
+</html>
