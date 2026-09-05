@@ -19,7 +19,6 @@
             box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
         }
 
-        /* 머리 전용 스타일 (눈 이모지와 형광빛 효과) */
         .snake-head {
             background-color: #3b82f6;
             border-radius: 6px;
@@ -126,6 +125,11 @@
         let ranking = [];
         let cells = {};
 
+        // 배경음악 객체 생성 (원하는 mp3 링크로 교체 가능)
+        const bgm = new Audio('https://www.youtube.com/watch?v=ahQulrVKLBY');
+        bgm.loop = true;
+        bgm.volume = 0.4; // 볼륨 조절 (0.0 ~ 1.0)
+
         try {
             ranking = JSON.parse(localStorage.getItem('jangang-snake-ranking') || '[]');
         } catch { ranking = []; }
@@ -178,11 +182,9 @@
                     const cell = cells[`${part.x}-${part.y}`];
                     if (cell) {
                         if (index === 0) {
-                            // 머리 부분은 특별하게 표시 (눈 이모지 추가)
                             cell.className = `cell snake-head`;
                             cell.innerText = '👀';
                         } else {
-                            // 몸통은 기존 장안고 스킨 유지
                             cell.className = `cell snake-skin`;
                         }
                     }
@@ -245,6 +247,10 @@
             scoreSubmitted = false;
             running = true;
 
+            // 게임 시작할 때 브금 재생
+            bgm.currentTime = 0;
+            bgm.play().catch(e => console.log("음원 재생 실패 (사용자 상호작용 필요):", e));
+
             document.getElementById('score-form').classList.add('hidden');
             document.getElementById('overlay-desc').classList.remove('hidden');
             document.getElementById('start-btn').innerText = '스페이스로 시작';
@@ -261,6 +267,7 @@
             } else {
                 running = false;
                 clearInterval(gameTimer);
+                bgm.pause(); // 일시정지하면 브금도 멈춤
                 render();
             }
         }
@@ -269,6 +276,7 @@
             gameOver = true;
             running = false;
             clearInterval(gameTimer);
+            bgm.pause(); // 게임 오버되면 브금 정지
 
             document.getElementById('overlay-title').innerText = 'GAME OVER';
             document.getElementById('overlay-desc').innerHTML = `<p class="text-slate-400">최종 점수 ${score}점 · 이름을 입력하고 기록을 남기세요.</p>`;
