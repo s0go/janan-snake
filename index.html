@@ -90,7 +90,7 @@
                         <span class="rounded bg-slate-900 p-2 text-center font-mono border border-slate-700">WASD</span>
                         <span class="rounded bg-slate-900 p-2 text-center font-mono border border-slate-700">SPACE</span>
                     </div>
-                    <p class="mt-3 text-sm leading-6 text-slate-400">WASD로 뱀을 조작하세요. 사과 하나당 0.5점, 황금 사과는 10~50점을 줍니다.</p>
+                    <p class="mt-3 text-sm leading-6 text-slate-400">WASD로 뱀을 조작해라. 사과 하나당 0.5점, 황금 사과는 10~50점을 준다.</p>
                     <button type="button" id="toggle-btn" onclick="toggleGame()" class="mt-4 w-full rounded-lg border border-blue-500 px-4 py-2 font-bold text-blue-400 transition hover:bg-blue-500 hover:text-white cursor-pointer">게임 시작</button>
                 </div>
 
@@ -125,10 +125,10 @@
         let ranking = [];
         let cells = {};
 
-        // 배경음악 객체 생성 (원하는 mp3 링크로 교체 가능)
-        const bgm = new Audio('https://www.youtube.com/watch?v=ahQulrVKLBY');
+        // 싹 다 정신 나가고 익살스러운 병맛 분위기의 서커스 풍 BGM 링크로 교체 완료
+        const bgm = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3');
         bgm.loop = true;
-        bgm.volume = 0.4; // 볼륨 조절 (0.0 ~ 1.0)
+        bgm.volume = 0.45;
 
         try {
             ranking = JSON.parse(localStorage.getItem('jangang-snake-ranking') || '[]');
@@ -247,9 +247,8 @@
             scoreSubmitted = false;
             running = true;
 
-            // 게임 시작할 때 브금 재생
             bgm.currentTime = 0;
-            bgm.play().catch(e => console.log("음원 재생 실패 (사용자 상호작용 필요):", e));
+            bgm.play().catch(e => console.log("음원 재생 실패:", e));
 
             document.getElementById('score-form').classList.add('hidden');
             document.getElementById('overlay-desc').classList.remove('hidden');
@@ -267,7 +266,7 @@
             } else {
                 running = false;
                 clearInterval(gameTimer);
-                bgm.pause(); // 일시정지하면 브금도 멈춤
+                bgm.pause();
                 render();
             }
         }
@@ -276,10 +275,10 @@
             gameOver = true;
             running = false;
             clearInterval(gameTimer);
-            bgm.pause(); // 게임 오버되면 브금 정지
+            bgm.pause();
 
             document.getElementById('overlay-title').innerText = 'GAME OVER';
-            document.getElementById('overlay-desc').innerHTML = `<p class="text-slate-400">최종 점수 ${score}점 · 이름을 입력하고 기록을 남기세요.</p>`;
+            document.getElementById('overlay-desc').innerHTML = `<p class="text-slate-400">최종 점수 ${score}점 · 이름 적고 기록 남겨라.</p>`;
             document.getElementById('score-form').classList.remove('hidden');
             document.getElementById('start-btn').innerText = '다시 시작하기';
             document.getElementById('submit-btn').disabled = false;
@@ -296,15 +295,15 @@
             const name = nameInput.value.trim();
             
             if (scoreSubmitted) {
-                alert("이미 등록된 점수입니다!");
+                alert("이미 등록된 점수다!");
                 return;
             }
             if (!name) {
-                alert("이름을 입력해주세요!");
+                alert("이름을 입력해라!");
                 return;
             }
             if (score <= 0) {
-                alert("점수가 0점보다 커야 기록할 수 있습니다!");
+                alert("0점은 기록 못 한다!");
                 return;
             }
 
@@ -317,27 +316,27 @@
             scoreSubmitted = true;
             document.getElementById('submit-btn').disabled = true;
             renderRanking();
-            alert("기록이 정상적으로 저장되었습니다!");
+            alert("정상적으로 저장됐다!");
         }
 
         function resetRankingWithPassword() {
-            const pwd = prompt("랭킹을 리셋하려면 관리자 비밀번호를 입력하세요:");
+            const pwd = prompt("비밀번호 입력해라:");
             if (pwd === "1018") {
-                if (confirm("정말로 모든 랭킹 기록을 초기화하시겠습니까?")) {
+                if (confirm("진짜 다 지울 거냐?")) {
                     ranking = [];
                     localStorage.removeItem('jangang-snake-ranking');
                     renderRanking();
-                    alert("랭킹이 초기화되었습니다.");
+                    alert("초기화 완료.");
                 }
             } else if (pwd !== null) {
-                alert("비밀번호가 올바르지 않습니다.");
+                alert("비밀번호 틀렸다.");
             }
         }
 
         function renderRanking() {
             const list = document.getElementById('ranking-list');
             if (!ranking.length) {
-                list.innerHTML = `<p class="text-sm text-slate-500 text-center py-2">첫 번째 기록을 남겨보세요.</p>`;
+                list.innerHTML = `<p class="text-sm text-slate-500 text-center py-2">아직 기록이 없다.</p>`;
                 return;
             }
             list.innerHTML = ranking.map((rank, index) => `
