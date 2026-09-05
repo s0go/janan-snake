@@ -11,7 +11,6 @@
         .grid-board { display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); }
         .cell { aspect-ratio: 1 / 1; border: 0.5px solid rgba(255, 255, 255, 0.05); }
         
-        /* 🐍 뱀 스킨을 장안고 마크로 설정 */
         .snake-skin {
             background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-or6Xtzl6ePYdO5DCtzAhVwgySktBte.png');
             background-size: cover;
@@ -35,11 +34,16 @@
                     <h1 class="text-2xl font-black tracking-tight sm:text-3xl">장안고 공학의 정석</h1>
                 </div>
             </div>
-            <div class="flex gap-2 text-center font-mono text-xs">
-                <div class="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2">
-                    <span class="block text-slate-400">점수</span>
-                    <strong id="score-display" class="text-xl">0</strong>
+            <div class="flex items-center gap-3">
+                <div class="flex gap-2 text-center font-mono text-xs">
+                    <div class="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2">
+                        <span class="block text-slate-400">점수</span>
+                        <strong id="score-display" class="text-xl">0</strong>
+                    </div>
                 </div>
+                <button type="button" onclick="resetRankingWithPassword()" class="text-xs bg-rose-950 hover:bg-rose-900 border border-rose-800 px-3 py-3 rounded-lg text-rose-300 transition font-bold">
+                    ⚙️ 기록 리셋
+                </button>
             </div>
         </header>
 
@@ -60,11 +64,11 @@
                         </div>
 
                         <div id="score-form" class="hidden mx-auto mt-5 flex max-w-sm gap-2">
-                            <input id="player-name" maxlength="12" placeholder="플레이어 이름" class="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
-                            <button type="button" onclick="submitScore()" id="submit-btn" class="rounded-lg bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-500">기록</button>
+                            <input id="player-name" maxlength="12" placeholder="플레이어 이름" onkeydown="if(event.key==='Enter') submitScore()" class="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-white" />
+                            <button type="button" onclick="submitScore()" id="submit-btn" class="rounded-lg bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-500 cursor-pointer">기록</button>
                         </div>
 
-                        <button type="button" id="start-btn" onclick="restart()" class="mt-6 rounded-lg bg-blue-600 px-7 py-3 font-bold text-white transition hover:bg-blue-500">스페이스로 시작</button>
+                        <button type="button" id="start-btn" onclick="restart()" class="mt-6 rounded-lg bg-blue-600 px-7 py-3 font-bold text-white transition hover:bg-blue-500 cursor-pointer">스페이스로 시작</button>
                     </div>
                 </div>
             </section>
@@ -77,7 +81,7 @@
                         <span class="rounded bg-slate-900 p-2 text-center font-mono border border-slate-700">SPACE</span>
                     </div>
                     <p class="mt-3 text-sm leading-6 text-slate-400">WASD로 뱀을 조작하세요. 사과 하나당 0.5점, 황금 사과는 10~50점을 줍니다.</p>
-                    <button type="button" id="toggle-btn" onclick="toggleGame()" class="mt-4 w-full rounded-lg border border-blue-500 px-4 py-2 font-bold text-blue-400 transition hover:bg-blue-500 hover:text-white">게임 시작</button>
+                    <button type="button" id="toggle-btn" onclick="toggleGame()" class="mt-4 w-full rounded-lg border border-blue-500 px-4 py-2 font-bold text-blue-400 transition hover:bg-blue-500 hover:text-white cursor-pointer">게임 시작</button>
                 </div>
 
                 <div class="rounded-2xl border border-slate-700 bg-slate-800/50 p-5">
@@ -249,7 +253,13 @@
             document.getElementById('overlay-desc').innerHTML = `<p class="text-slate-400">최종 점수 ${score}점 · 이름을 입력하고 기록을 남기세요.</p>`;
             document.getElementById('score-form').classList.remove('hidden');
             document.getElementById('start-btn').innerText = '다시 시작하기';
+            document.getElementById('submit-btn').disabled = false;
             render();
+
+            setTimeout(() => {
+                const nameInput = document.getElementById('player-name');
+                if (nameInput) nameInput.focus();
+            }, 50);
         }
 
         function submitScore() {
@@ -281,6 +291,20 @@
             alert("기록이 정상적으로 저장되었습니다!");
         }
 
+        function resetRankingWithPassword() {
+            const pwd = prompt("랭킹을 리셋하려면 관리자 비밀번호를 입력하세요:");
+            if (pwd === "1018") {
+                if (confirm("정말로 모든 랭킹 기록을 초기화하시겠습니까?")) {
+                    ranking = [];
+                    localStorage.removeItem('jangang-snake-ranking');
+                    renderRanking();
+                    alert("랭킹이 초기화되었습니다.");
+                }
+            } else if (pwd !== null) {
+                alert("비밀번호가 올바르지 않습니다.");
+            }
+        }
+
         function renderRanking() {
             const list = document.getElementById('ranking-list');
             if (!ranking.length) {
@@ -296,6 +320,9 @@
         }
 
         window.addEventListener('keydown', (e) => {
+            const activeTag = document.activeElement ? document.activeElement.tagName : '';
+            if (activeTag === 'INPUT') return;
+
             if (e.code === 'Space') {
                 e.preventDefault();
                 toggleGame();
