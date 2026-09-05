@@ -46,7 +46,7 @@
         <div class="grid gap-6 lg:grid-cols-[1fr_280px]">
             <section class="relative rounded-2xl border border-slate-700 bg-slate-800/50 p-3 shadow-sm sm:p-5">
                 <div id="board" class="mx-auto grid-board aspect-square w-full max-w-[650px] overflow-hidden rounded-xl border-4 border-blue-500/80 bg-slate-900">
-                    </div>
+                </div>
 
                 <div id="overlay" class="absolute inset-0 flex items-center justify-center rounded-2xl bg-slate-950/85 p-6 text-center backdrop-blur-[2px]">
                     <div class="w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900 px-6 py-8 shadow-xl sm:px-12">
@@ -83,7 +83,7 @@
                 <div class="rounded-2xl border border-slate-700 bg-slate-800/50 p-5">
                     <h2 class="font-mono text-sm font-bold uppercase tracking-widest text-slate-300">RANKING BOARD</h2>
                     <ol id="ranking-list" class="mt-4 space-y-2 text-sm">
-                        </ol>
+                    </ol>
                 </div>
             </aside>
         </div>
@@ -109,6 +109,7 @@
         let scoreSubmitted = false;
         let gameTimer = null;
         let ranking = [];
+        let cells = {};
 
         try {
             ranking = JSON.parse(localStorage.getItem('jangang-snake-ranking') || '[]');
@@ -133,12 +134,13 @@
         function createBoard() {
             const board = document.getElementById('board');
             board.innerHTML = '';
+            cells = {};
             for (let y = 0; y < SIZE; y++) {
                 for (let x = 0; x < SIZE; x++) {
                     const cell = document.createElement('div');
-                    cell.id = `cell-${x}-${y}`;
                     cell.className = 'cell';
                     board.appendChild(cell);
+                    cells[`${x}-${y}`] = cell;
                 }
             }
         }
@@ -146,21 +148,18 @@
         function render() {
             document.getElementById('score-display').innerText = score;
 
-            for (let y = 0; y < SIZE; y++) {
-                for (let x = 0; x < SIZE; x++) {
-                    const cell = document.getElementById(`cell-${x}-${y}`);
-                    cell.className = 'cell';
-                }
+            for (let key in cells) {
+                cells[key].className = 'cell';
             }
 
             apples.forEach(apple => {
-                const cell = document.getElementById(`cell-${apple.x}-${apple.y}`);
+                const cell = cells[`${apple.x}-${apple.y}`];
                 if (cell) cell.className = `cell ${apple.golden ? 'golden-apple' : 'apple'}`;
             });
 
             if (!gameOver) {
                 snake.forEach((part) => {
-                    const cell = document.getElementById(`cell-${part.x}-${part.y}`);
+                    const cell = cells[`${part.x}-${part.y}`];
                     if (cell) cell.className = `cell snake-skin`;
                 });
             }
@@ -303,11 +302,22 @@
                 return;
             }
             const keys = { w: 'up', ArrowUp: 'up', s: 'down', ArrowDown: 'down', a: 'left', ArrowLeft: 'left', d: 'right', ArrowRight: 'right' };
-            const next = keys[e.key];
+            const next = keys[e.key.toLowerCase()];
             if (next) {
                 e.preventDefault();
                 if (
                     (direction === 'up' && next !== 'down') ||
                     (direction === 'down' && next !== 'up') ||
                     (direction === 'left' && next !== 'right') ||
-                    (direction === '
+                    (direction === 'right' && next !== 'left')
+                ) {
+                    nextDirection = next;
+                }
+            }
+        });
+
+        createBoard();
+        render();
+    </script>
+</body>
+</html>
