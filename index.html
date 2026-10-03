@@ -52,7 +52,7 @@
                     </div>
                 </div>
                 <button type="button" onclick="resetRankingWithPassword()" class="text-xs bg-rose-950 hover:bg-rose-900 border border-rose-800 px-3 py-3 rounded-lg text-rose-300 transition font-bold cursor-pointer">
-                    ⚙️ 기록 리셋
+                    ⚙️️ 기록 리셋
                 </button>
             </div>
         </header>
@@ -125,12 +125,15 @@
         let ranking = [];
         let cells = {};
 
-        const bgm = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3');
+        // 보내준 커스텀 MP3 음원 등록
+        const customAudioUrl = 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a7322e.mp3?filename=tralalero-tralala-104921.mp3';
+
+        const bgm = new Audio(customAudioUrl);
         bgm.loop = true;
         bgm.volume = 0.45;
 
-        // 사과 먹을 때 재생될 커스텀 효과음 파일 객체
-        const eatSound = new Audio('https://yja.app/sounds/8.mp3');
+        // 사과 먹을 때 재생될 커스텀 효과음
+        const eatSound = new Audio(customAudioUrl);
         eatSound.volume = 0.7;
 
         let audioCtx = null;
@@ -144,7 +147,7 @@
             return audioCtx;
         }
 
-        // 회전할 때 "뿡"
+        // 회전할 때 소리
         function playFartSound() {
             try {
                 const ctx = getAudioContext();
@@ -166,10 +169,10 @@
             } catch(e) {}
         }
 
-        // 사과 먹을 때 외부 링크 MP3 재생
+        // 사과 먹을 때 지정 음원 재생
         function playEatSound() {
             try {
-                eatSound.currentTime = 0; // 연속으로 먹을 때 처음부터 다시 재생되도록
+                eatSound.currentTime = 0;
                 eatSound.play().catch(e => console.log("효과음 재생 실패:", e));
             } catch(e) {}
         }
@@ -290,7 +293,7 @@
             const updated = [next, ...snake];
 
             if (eatenIndex >= 0) {
-                playEatSound(); // 외부 링크 효과음 재생!
+                playEatSound();
                 const eaten = apples[eatenIndex];
                 if (eaten.golden) {
                     score += Math.floor(Math.random() * 41) + 10;
@@ -409,7 +412,7 @@
                 list.innerHTML = `<p class="text-sm text-slate-500 text-center py-2">아직 기록이 없다.</p>`;
                 return;
             }
-            list.innerHTML = ranking.ranking = ranking.map((rank, index) => `
+            list.innerHTML = ranking.map((rank, index) => `
                 <li class="flex items-center justify-between border-b border-slate-700/50 pb-2">
                     <span><b class="mr-2 text-slate-500">${index + 1}</b>${rank.name}</span>
                     <strong class="text-blue-400">${rank.score}</strong>
